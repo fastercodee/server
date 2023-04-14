@@ -72,7 +72,7 @@ class AuthController extends Controller
     if (User::where('username_lower', strtolower($input['username']))->exists())
       return response()->json([
         'message' => 'The username has already been taken.'
-      ]);
+      ], 409);
 
     $user = User::create($input);
 
@@ -139,6 +139,10 @@ class AuthController extends Controller
   {
     $user = $request->user();
     $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
-    Auth::logout();
+    Auth::guard('web')->logout();
+
+    return response()->json([
+      'message' => "Logout success"
+    ]);
   }
 }

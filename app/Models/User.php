@@ -12,10 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    protected $primaryKey = 'uuid';
-    protected $keyType = 'uuid';
-    public $incrementing = false;
-
+    protected $primaryKey = 'uid';
 
     protected static function boot()
     {
@@ -31,7 +28,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'uuid',
+        'uid',
         'email',
         'username',
         'name',
