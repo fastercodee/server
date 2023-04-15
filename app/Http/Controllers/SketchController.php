@@ -6,8 +6,11 @@ use App\Models\File;
 use App\Models\Sketch;
 use Illuminate\Http\Request;
 
+
+
 class SketchController extends Controller
 {
+
 
   public function create(Request $request)
   {
@@ -87,6 +90,32 @@ class SketchController extends Controller
     ]);
   }
 
+  public static function mapFileData($file)
+  {
+    if ($file->size > 1_000_000 || json_encode($file->data) === false) {
+      // delete field 'data'. need call request /sketch/get_file
+      unset($file['data']);
+    }
+    return $file;
+  }
+
+  public function get_file(Request $request)
+  {
+    $validated = $request->validate([
+      'uid' => ['required', 'integer', 'max:99999999999999999999'],
+    ]);
+
+    $user = request()->user();
+
+    $file = File::where('uid', $validated['uid'])
+      ->whereHas('sketch', function ($query) use ($user) {
+        $query->where('by_user_uid', $user->uid);
+      })
+      ->firstOrFail();
+
+    return response($file['data'])->header('Content-Type', 'application/octet-stream');
+  }
+
   public function fetch(Request $request)
   {
     $validated = $request->validate([
@@ -113,7 +142,7 @@ class SketchController extends Controller
       return response()->json([
         'message' => "Sketch is private",
         'code' => 'sketch_is_private'
-      ]);
+      ], 403);
     }
 
     $meta = request()->get('meta');
@@ -121,7 +150,9 @@ class SketchController extends Controller
       // client not exists
 
       $sketch->user;
-      $sketch->files;
+      foreach ($sketch->files as $file)
+        [SketchController::class, 'mapFileData']($file);
+
       return response()->json([
         'sketch' => $sketch
       ]);
@@ -130,8 +161,7 @@ class SketchController extends Controller
     $hashes = request()->get('hashes');
     $files_local = array_combine($meta, $hashes);
 
-    $files_change = [];
-    // all files of sketch on cloud : $sketch->files;
+    $files_change = []; // all files of sketch on cloud : $sketch->files;
     // all files of sketch on client: request->only(['meta', 'hashes'])
     // check files diff 
     foreach ($sketch->files_short as $file) {
@@ -146,14 +176,14 @@ class SketchController extends Controller
           // file changes
           $files_change[$file->filePath] = [
             "type" => "M",
-            "file" => $sketch->file($file->filePath)
+            "file" => [SketchController::class, 'mapFileData']($sketch->file($file->filePath))
           ];
         }
       } else {
         // file not in client // mark this file added;
         $files_change[$file->filePath] = [
           "type" => "U+",
-          "file" => $sketch->file($file->filePath)
+          "file" => [SketchController::class, 'mapFileData']($sketch->file($file->filePath))
         ];
       }
       unset($files_local[$file->filePath]);
@@ -199,7 +229,7 @@ class SketchController extends Controller
       return response()->json([
         "message" => "You do not have permission to update this sketch",
         'code' => 'do_not_have_permission_to_update'
-      ]);
+      ], 403);
 
     $files = $request->file('files');
     $files_delete = isset($validated['deletes']) ? $validated['deletes'] : null;
@@ -207,7 +237,7 @@ class SketchController extends Controller
       return response()->json([
         'message' => 'No need action',
         'code' => 'no_need_action'
-      ]);
+      ], 201);
 
     $total_files_size = $sketch->total_files_size;
 
@@ -265,6 +295,12 @@ class SketchController extends Controller
         'code' => 'total_size_gt_13mb'
       ], 422);
     }
+
+    if (!$files_delete && count($files_update) === 0 && count($files_add) === 0)
+      return response()->json([
+        'message' => 'No need action',
+        'code' => 'no_need_action'
+      ], 201);
 
     // update total size sketch
     $sketch->update(['total_files_size' => $total_files_size]);

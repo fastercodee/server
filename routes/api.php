@@ -39,6 +39,7 @@ Route::controller(SketchController::class)
     Route::post('sketch/create', 'create');
     Route::post('sketch/update', 'update');
     Route::post('sketch/delete', 'delete');
+    Route::post('sketch/get_file', 'get_file');
   })
   ->middleware([])->group(function () {
     Route::post('sketch/fetch', 'fetch');
