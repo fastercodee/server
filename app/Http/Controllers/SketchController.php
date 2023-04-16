@@ -109,7 +109,9 @@ class SketchController extends Controller
 
     $file = File::where('uid', $validated['uid'])
       ->whereHas('sketch', function ($query) use ($user) {
-        $query->where('by_user_uid', $user->uid);
+        $query = $query->where('private', false);
+        if ($user)
+          $query->orWhere('by_user_uid', $user->uid);
       })
       ->firstOrFail();
 
@@ -130,7 +132,7 @@ class SketchController extends Controller
             ;
         }
       ],
-      'meta.*' => ['string', 'min:1', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
+      'meta.*' => ['string', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
       'hashes' => ['array'],
       'hashes.*' => ['string', 'size:64', 'regex:/^[0-9a-f]{64}$/']
     ]);
@@ -150,11 +152,17 @@ class SketchController extends Controller
       // client not exists
 
       $sketch->user;
-      foreach ($sketch->files as $file)
-        [SketchController::class, 'mapFileData']($file);
-
+      $files_change = [];
+      foreach ($sketch->files as $file) {
+        $files_change[$file->filePath] = [
+          'type' => 'U+',
+          'file' => [SketchController::class, 'mapFileData']($file)
+        ];
+      }
+      unset($sketch->files);
       return response()->json([
-        'sketch' => $sketch
+        'sketch' => $sketch,
+        'file_changes' => $files_change
       ]);
     }
 
@@ -210,6 +218,7 @@ class SketchController extends Controller
 
       'meta' => [
         'array',
+        'min:1',
         'max:120',
         function ($attribute, $value, $fail) {
           if (!is_array(request()->file('files')) || count($value) !== count(request()->file('files')))
@@ -217,7 +226,7 @@ class SketchController extends Controller
             ;
         }
       ],
-      'meta.*' => ['string', 'min:1', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
+      'meta.*' => ['string', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
       'files' => ['array', 'max:120'],
       'files.*' => ['file', 'max:5120'],
       'deletes' => ['array', 'max:120'],
