@@ -6,7 +6,8 @@ use App\Models\File;
 use App\Models\Sketch;
 use Illuminate\Http\Request;
 
-
+define('RULE_FILEPATH', 'regex:/^(?:[^\/\0]+\/)*[^\/\0]+$/');
+define('RULE_UID',  ['required', 'integer', 'max:99999999999999999999']);
 
 class SketchController extends Controller
 {
@@ -28,7 +29,7 @@ class SketchController extends Controller
             ;
         }
       ],
-      'meta.*' => ['string', 'min:1', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
+      'meta.*' => ['string', 'min:1', 'max:260', RULE_FILEPATH],
       'files' => ['required', 'array', 'min:1', 'max:120'],
       'files.*' => ['file', 'max:5120']
     ]);
@@ -102,7 +103,7 @@ class SketchController extends Controller
   public function get_file(Request $request)
   {
     $validated = $request->validate([
-      'uid' => ['required', 'integer', 'max:99999999999999999999'],
+      'uid' => RULE_UID,
     ]);
 
     $user = request()->user();
@@ -121,7 +122,7 @@ class SketchController extends Controller
   public function fetch(Request $request)
   {
     $validated = $request->validate([
-      'uid' => ['required', 'integer', 'max:99999999999999999999'],
+      'uid' => RULE_UID,
 
       'meta' => [
         'array',
@@ -132,7 +133,7 @@ class SketchController extends Controller
             ;
         }
       ],
-      'meta.*' => ['string', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
+      'meta.*' => ['string', 'max:260', RULE_FILEPATH],
       'hashes' => ['array'],
       'hashes.*' => ['string', 'size:64', 'regex:/^[0-9a-f]{64}$/']
     ]);
@@ -214,7 +215,7 @@ class SketchController extends Controller
   public function update(Request $request)
   {
     $validated = $request->validate([
-      'uid' => ['required', 'integer', 'max:99999999999999999999'],
+      'uid' => RULE_UID,
 
       'meta' => [
         'array',
@@ -226,11 +227,11 @@ class SketchController extends Controller
             ;
         }
       ],
-      'meta.*' => ['string', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/'],
+      'meta.*' => ['string', 'max:260', RULE_FILEPATH],
       'files' => ['array', 'max:120'],
       'files.*' => ['file', 'max:5120'],
       'deletes' => ['array', 'max:120'],
-      'deletes.*' => ['string', 'min:1', 'max:260', 'regex:/^([a-zA-Z0-9_]+\/)*[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/']
+      'deletes.*' => ['string', 'min:1', 'max:260', RULE_FILEPATH]
     ]);
 
     $sketch = Sketch::findOrFail($validated['uid']);
@@ -341,7 +342,7 @@ class SketchController extends Controller
   public function delete(Request $request)
   {
     $validated = $request->validate([
-      'uid' => ['required', 'integer', 'max:99999999999999999999'],
+      'uid' => RULE_UID,
     ]);
 
     $sketch = Sketch::findOrFail($validated['uid']);
