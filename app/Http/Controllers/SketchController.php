@@ -185,7 +185,6 @@ class SketchController extends Controller
           // file changes
           $files_change[$file->filePath] = [
             "type" => "M",
-            "file" => [SketchController::class, 'mapFileData']($sketch->file($file->filePath))
           ];
         }
       } else {
