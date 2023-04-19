@@ -10,7 +10,7 @@ class Kernel extends ConsoleKernel
   /**
    * Define the application's command schedule.
    */
-  protected function schedule(Schedule $schedule): void
+  protected function schedule(Schedule $schedule)
   {
     // $schedule->command('inspire')->hourly();
     $schedule->command('sanctum:prune-expired --hours=24')->daily();
@@ -20,7 +20,7 @@ class Kernel extends ConsoleKernel
   /**
    * Register the commands for the application.
    */
-  protected function commands(): void
+  protected function commands()
   {
     $this->load(__DIR__ . '/Commands');
 
