@@ -15,32 +15,31 @@ use App\Http\Controllers\SketchController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::middleware('guest')->group(function () {
+  Route::post('login', [AuthController::class, 'login']);
+  Route::post('register', [AuthController::class, 'register']);
+  Route::get('password/reset/{token}', [AuthController::class, 'reset_password'])->name('password.reset');
+  Route::post('forgot-password', [AuthController::class, 'forgot_password'])->name('password.email');
+});
 
-Route::controller(AuthController::class)
-  ->middleware('guest')->group(function () {
-    Route::post('login', 'login');
-    Route::post('register', 'register');
-    Route::get('password/reset/{token}', 'reset_password')->name('password.reset');
-    Route::post('forgot-password', 'forgot_password')->name('password.email');
-  })
-  ->middleware('auth:sanctum')->group(function () {
-    Route::post('logout', 'logout');
-  });
+Route::middleware('auth:sanctum')->group(function () {
+  Route::post('logout', [AuthController::class, 'logout']);
+});
 
-Route::middleware('auth:sanctum')
-  ->group(function () {
-    Route::get('/user', function (Request $request) {
+
+Route::middleware('auth:sanctum')->group(function () {
+  Route::get('/user', function (Request $request) {
       return $request->user();
-    });
   });
+});
 
-Route::controller(SketchController::class)
-  ->middleware('auth:sanctum')->group(function () {
-    Route::post('sketch/create', 'create');
-    Route::post('sketch/update', 'update');
-    Route::post('sketch/delete', 'delete');
-  })
-  ->middleware([])->group(function () {
-    Route::post('sketch/fetch', 'fetch');
-    Route::post('sketch/get_file', 'get_file');
-  });
+Route::middleware('auth:sanctum')->group(function () {
+  Route::post('sketch/create', [SketchController::class, 'create']);
+  Route::post('sketch/update', [SketchController::class, 'update']);
+  Route::post('sketch/delete', [SketchController::class, 'delete']);
+});
+
+Route::group([], function () {
+  Route::post('sketch/fetch', [SketchController::class, 'fetch']);
+  Route::post('sketch/get_file', [SketchController::class, 'get_file']);
+});
