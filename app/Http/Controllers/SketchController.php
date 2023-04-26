@@ -7,7 +7,7 @@ use App\Models\Sketch;
 use Illuminate\Http\Request;
 
 define('RULE_FILEPATH', 'regex:/^(?:[^\/\0]+\/)*[^\/\0]+$/');
-define('RULE_UID',  ['required', 'integer', 'max:99999999999999999999']);
+define('RULE_UID', ['required', 'integer', 'max:99999999999999999999']);
 
 class SketchController extends Controller
 {
@@ -126,7 +126,10 @@ class SketchController extends Controller
       ],
       'meta.*' => ['string', 'max:260', RULE_FILEPATH],
       'hashes' => ['array'],
-      'hashes.*' => ['string', 'size:64', 'regex:/^[0-9a-f]{64}$/']
+      'hashes.*' => ['string', 'size:64', 'regex:/^[0-9a-f]{64}$/'],
+
+      'deletes' => ['array', 'max:120'],
+      'deletes.*' => ['required', 'string', 'max:260', RULE_FILEPATH],
     ]);
 
     $sketch = Sketch::findOrFail($validated['uid']);
@@ -140,16 +143,24 @@ class SketchController extends Controller
     }
 
     $meta = request()->get('meta');
+    $deletes = request()->get('deletes') ?? [];
     if ($meta == null) {
       // client not exists
 
       $sketch->user;
       $files_change = [];
       foreach ($sketch->files as $file) {
-        $files_change[$file->filePath] = [
-          'type' => 'U+',
-          'file' => $file
-        ];
+        if (in_array($file->filePath, $deletes)) {
+          unset($file->data);
+          $files_change[$file->filePath] = [
+            'type' => 'D',
+            'file' => $file
+          ];
+        } else
+          $files_change[$file->filePath] = [
+            'type' => 'U+',
+            'file' => $file
+          ];
       }
       unset($sketch->files);
       return response()->json([
@@ -184,10 +195,16 @@ class SketchController extends Controller
         }
       } else {
         // file not in client // mark this file added;
-        $files_change[$file->filePath] = [
-          "type" => "U+",
-          "file" => $sketch->file($file->filePath)
-        ];
+        if (in_array($file->filePath, $deletes))
+          $files_change[$file->filePath] = [
+            'type' => 'D',
+            "file" => $file
+          ];
+        else
+          $files_change[$file->filePath] = [
+            'type' => 'U+',
+            "file" => $sketch->file($file->filePath)
+          ];
       }
       unset($files_local[$file->filePath]);
     }
