@@ -21,7 +21,8 @@ class File extends Model
         'hash',
         'size',
         'updated_at',
-        'created_at'
+        'created_at',
+        'unencodable_data'
     ];
 
    
@@ -32,5 +33,21 @@ class File extends Model
 
     protected $hidden = [
         'by_sketch_uid'
+    ];
+
+    protected static function booted()
+    {
+        static::saving(function ($file) {
+            if ($file->size > 1000000 || json_encode($file->data) === false) {
+                $file->unencodable_data = true;
+            } else {
+                $file->unencodable_data = false;
+            }
+        });
+    }
+
+    protected $casts = [
+      'unencodable_data' => 'boolean'
+      // 'email_verified_at' => 'datetime',
     ];
 }

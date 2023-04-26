@@ -91,15 +91,6 @@ class SketchController extends Controller
     ]);
   }
 
-  public static function mapFileData($file)
-  {
-    if ($file->size > 1_000_000 || json_encode($file->data) === false) {
-      // delete field 'data'. need call request /sketch/get_file
-      unset($file['data']);
-    }
-    return $file;
-  }
-
   public function get_file(Request $request)
   {
     $validated = $request->validate([
@@ -157,7 +148,7 @@ class SketchController extends Controller
       foreach ($sketch->files as $file) {
         $files_change[$file->filePath] = [
           'type' => 'U+',
-          'file' => [SketchController::class, 'mapFileData']($file)
+          'file' => $file
         ];
       }
       unset($sketch->files);
@@ -179,19 +170,23 @@ class SketchController extends Controller
         // check file changes
         $hash_in_client = $files_local[$file->filePath];
         if ($hash_in_client === $file->hash) {
-          // file not change
-          continue;
+          // file not change, result to id file
+          $files_change[$file->filePath] = [
+            'type' => "N",
+            'file' => $file
+          ];
         } else {
           // file changes
           $files_change[$file->filePath] = [
             "type" => "M",
+            'file' => $file
           ];
         }
       } else {
         // file not in client // mark this file added;
         $files_change[$file->filePath] = [
           "type" => "U+",
-          "file" => [SketchController::class, 'mapFileData']($sketch->file($file->filePath))
+          "file" => $sketch->file($file->filePath)
         ];
       }
       unset($files_local[$file->filePath]);

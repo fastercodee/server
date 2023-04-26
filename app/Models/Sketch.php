@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
 
 class Sketch extends Model
 {
@@ -31,7 +32,8 @@ class Sketch extends Model
   }
   public function files()
   {
-    return $this->hasMany(File::class, 'by_sketch_uid', 'uid');
+    return $this->hasMany(File::class, 'by_sketch_uid', 'uid')
+      ->addSelect(['*', DB::raw('IF(unencodable_data = "1", NULL, data) as data')]);
   }
   public function files_short($paths = null)
   {
@@ -45,11 +47,15 @@ class Sketch extends Model
 
     return $query;
   }
-  public function file($filepath)
+  public function file($filepath, $force = false)
   {
-    return File::where('by_sketch_uid', $this->uid)
-      ->where('filePath', $filepath)
-      ->first();
+    $query = File::where('by_sketch_uid', $this->uid)
+      ->where('filePath', $filepath);
+
+    if (!$force)
+      $query = $query->selectRaw('*, IF(unencodable_data = "1", NULL, data) as data');
+    
+    return $query->first();
   }
 
   protected $hidden = [
