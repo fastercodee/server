@@ -35,8 +35,9 @@ class File extends Model
         'by_sketch_uid'
     ];
 
-    protected static function booted()
+    protected static function boot()
     {
+        parent::boot();
         static::saving(function ($file) {
             if ($file->size > 1000000 || json_encode($file->data) === false) {
                 $file->unencodable_data = true;

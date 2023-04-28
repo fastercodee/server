@@ -71,15 +71,17 @@ class SketchController extends Controller
       $path = $file->getRealPath();
       $size = $file->getSize();
       $hash = hash_file('sha256', $path);
+      $data = file_get_contents($path);
 
       $files[$index] = [
         'by_sketch_uid' => $by_sketch_uid,
         'filePath' => $meta[$index],
-        'data' => file_get_contents($path),
+        'data' => $data,
         'hash' => $hash,
         'size' => $size,
         'created_at' => $now,
-        'updated_at' => $now
+        'updated_at' => $now,
+        'unencodable_data' => $size > 1000000 || json_encode($data) === false
       ];
     }
 
@@ -340,6 +342,8 @@ class SketchController extends Controller
 
       $diff['created_at'] = $now;
       $diff['updated_at'] = $now;
+      
+      $diff['unencodable_data']= $diff['size'] > 1000000 || json_encode($diff['data']) === false;
 
       unset($diff['file']);
       return $diff;
