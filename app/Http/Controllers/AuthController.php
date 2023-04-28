@@ -63,7 +63,9 @@ class AuthController extends Controller
       'username' => ['required', 'regex:/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i'],
       'name' => ['nullable', 'max:50'],
       'password' => ['required', 'regex:/^(?=.*[A-Z])(?=.*\d).*$/']
-    ]);
+    ], [
+        'email.unique' => 'The email has already been taken.',
+      ]);
 
     $input = $request->only(['email', 'username', 'name', 'password']);
     $input['password'] = Hash::make($input['password']);
@@ -144,5 +146,22 @@ class AuthController extends Controller
     return response()->json([
       'message' => "Logout success"
     ]);
+  }
+
+  public function destroy(Request $request)
+  {
+    $request->validate([
+      'password' => ['required', 'max:50', 'regex:/^(?=.*[A-Z])(?=.*\d).*$/'],
+    ]);
+
+    if (!Hash::check(request()->password,  $request->user()['password'])) {
+      return response()->json([
+        'message' => 'Incorrect password',
+      ], 403);
+    }
+
+    $request->user()->delete();
+
+    return response()->json(null, 204);
   }
 }
