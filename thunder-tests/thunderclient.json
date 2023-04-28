@@ -1,0 +1,687 @@
+[
+  {
+    "_id": "25ea11d6-4721-4451-b22a-52c6ceeb8de9",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "update",
+    "url": "localhost:8000/api/sketch/update",
+    "method": "POST",
+    "sortNum": 10000,
+    "created": "2023-04-28T08:44:33.930Z",
+    "modified": "2023-04-28T08:44:33.930Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10050"
+        },
+        {
+          "name": "meta[]",
+          "value": "index.html"
+        },
+        {
+          "name": "meta[]",
+          "value": "ss.php"
+        },
+        {
+          "name": "meta[]",
+          "value": "kurumi.jpg"
+        }
+      ],
+      "files": [
+        {
+          "name": "files[]",
+          "value": "f:\\Users\\Admin\\blog\\app\\Http\\Controllers\\AuthController.php"
+        },
+        {
+          "name": "files[]",
+          "value": "f:\\Users\\Admin\\blog\\app\\Http\\Controllers\\Controller.php"
+        },
+        {
+          "name": "files[]",
+          "value": "f:\\Users\\Admin\\Hình ảnh\\3fda1fcp0xx91.jpg"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "98583548-9758-40a6-8668-8412b69e611f",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "fetch with `deletes`",
+    "url": "localhost:8000/api/sketch/fetch?uid=10048",
+    "method": "POST",
+    "sortNum": 20000,
+    "created": "2023-04-28T08:44:56.792Z",
+    "modified": "2023-04-28T08:44:56.792Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [
+      {
+        "name": "uid",
+        "value": "10048",
+        "isPath": false
+      }
+    ],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10048"
+        },
+        {
+          "name": "hashes[]",
+          "value": "f0f18faa0e799be05a5425aaa0fad9a6fca8988792e6993260862ec1b82db8e6",
+          "isDisabled": true
+        },
+        {
+          "name": "meta[]",
+          "value": "index.html",
+          "isDisabled": true
+        },
+        {
+          "name": "hashes[]",
+          "value": "f0f18faa0e799be05a5425aaa0aad9a6fca8988792e6993260862ec1b82db8e6"
+        },
+        {
+          "name": "meta[]",
+          "value": "index2.html"
+        },
+        {
+          "name": "deletes[]",
+          "value": "index.html"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "48d55056-b2b2-4dcc-9583-09a181c86a8f",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "fetch",
+    "url": "localhost:8000/api/sketch/fetch?uid=10048",
+    "method": "POST",
+    "sortNum": 30000,
+    "created": "2023-04-28T08:45:08.784Z",
+    "modified": "2023-04-28T08:45:08.784Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [
+      {
+        "name": "uid",
+        "value": "10048",
+        "isPath": false
+      }
+    ],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10048"
+        },
+        {
+          "name": "hashes[]",
+          "value": "f0f18faa0e799be05a5425aaa0fad9a6fca8988792e6993260862ec1b82db8e6"
+        },
+        {
+          "name": "meta[]",
+          "value": "index.html"
+        },
+        {
+          "name": "hashes[]",
+          "value": "f0f18faa0e799be05a5425aaa0aad9a6fca8988792e6993260862ec1b82db8e6"
+        },
+        {
+          "name": "meta[]",
+          "value": "index2.html"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "f7441718-a31d-4a38-86a7-1928cdc238f5",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "user",
+    "url": "http://localhost:8000/api/user",
+    "method": "GET",
+    "sortNum": 2500,
+    "created": "2023-04-28T08:45:25.427Z",
+    "modified": "2023-04-28T09:33:33.436Z",
+    "headers": [
+      {
+        "name": "authorization",
+        "value": "{{TRC_TOKEN}}"
+      }
+    ],
+    "params": [],
+    "tests": [
+      {
+        "type": "res-code",
+        "custom": "",
+        "action": "equal",
+        "value": "200"
+      },
+      {
+        "type": "res-body",
+        "custom": "",
+        "action": "isjson",
+        "value": "{ \"uid\": 1, \"email\": \"gtjfhgtcfehhtkuibjjn@gmail.co\", \"username\": \"grwjfcsgtjtjkutgttaghtycdshin\", \"name\": \"grwjfcsgtjtjkutgttaghtycdshin\", \"updated_at\": \"2023-04-13T15:09:04.000000Z\", \"created_at\": \"2023-04-13T15:09:04.000000Z\" }"
+      }
+    ]
+  },
+  {
+    "_id": "74693b7c-19fe-4afe-9a98-a80a7caf87fe",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "get_file",
+    "url": "localhost:8000/api/sketch/get_file",
+    "method": "POST",
+    "sortNum": 50000,
+    "created": "2023-04-28T08:45:43.615Z",
+    "modified": "2023-04-28T08:45:43.615Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "17"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "93fe1743-5b43-49f4-af5b-f6bea8948362",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "get_file",
+    "url": "localhost:8000/api/sketch/get_file",
+    "method": "POST",
+    "sortNum": 60000,
+    "created": "2023-04-28T08:45:46.687Z",
+    "modified": "2023-04-28T08:45:46.687Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "17"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "dc8fc266-0b7f-43a5-9cc8-e8cede965413",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "fetch normal",
+    "url": "localhost:8000/api/sketch/fetch",
+    "method": "POST",
+    "sortNum": 70000,
+    "created": "2023-04-28T08:46:19.896Z",
+    "modified": "2023-04-28T08:46:19.896Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10050"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "50394539-c446-4cad-8972-b5e8b537e5b6",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "fetch normal",
+    "url": "localhost:8000/api/sketch/fetch",
+    "method": "POST",
+    "sortNum": 80000,
+    "created": "2023-04-28T08:46:21.520Z",
+    "modified": "2023-04-28T08:46:21.520Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10050"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "a27e18b9-4a30-4998-9d19-383cd40141cd",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "delete",
+    "url": "localhost:8000/api/sketch/delete",
+    "method": "POST",
+    "sortNum": 90000,
+    "created": "2023-04-28T08:46:31.585Z",
+    "modified": "2023-04-28T08:46:31.585Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10051"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "9bdb957e-caa3-4897-9512-817b333a5377",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "update with not auth",
+    "url": "localhost:8000/api/sketch/update",
+    "method": "POST",
+    "sortNum": 100000,
+    "created": "2023-04-28T08:46:51.520Z",
+    "modified": "2023-04-28T08:46:51.520Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 33|CzMh2QeTidNDwAvkELav2UqnrK6Hq0ybbVeOGJs6"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "uid",
+          "value": "10048"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "4d465d37-af00-4404-8ad2-f31b0ec3881a",
+    "colId": "523b5737-8fce-4150-893c-0aa2f06f45e6",
+    "containerId": "",
+    "name": "create",
+    "url": "localhost:8000/api/sketch/create",
+    "method": "POST",
+    "sortNum": 110000,
+    "created": "2023-04-28T08:46:58.994Z",
+    "modified": "2023-04-28T08:46:58.994Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 34|qrqI6klBf8GkiPoCkJY03vaH9otR7D8Wm78hUgW1"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "name",
+          "value": "ejgire",
+          "isDisabled": true
+        },
+        {
+          "name": "private",
+          "value": "1",
+          "isDisabled": true
+        },
+        {
+          "name": "meta[]",
+          "value": "index.html"
+        }
+      ],
+      "files": [
+        {
+          "name": "files[]",
+          "value": "f:\\Users\\Admin\\app\\index.html"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "58ca2e61-8dd7-4224-beeb-7c62ada52bc2",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "login",
+    "url": "localhost:8000/api/login",
+    "method": "POST",
+    "sortNum": 20000,
+    "created": "2023-04-28T08:47:07.175Z",
+    "modified": "2023-04-28T09:40:45.326Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "username",
+          "value": "example@example.com"
+        },
+        {
+          "name": "password",
+          "value": "Alpine1"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "51c9a359-5afe-4f37-ab28-db720fdb0d68",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "register",
+    "url": "localhost:8000/api/register",
+    "method": "POST",
+    "sortNum": 1250,
+    "created": "2023-04-28T08:47:15.559Z",
+    "modified": "2023-04-28T09:17:57.210Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "email",
+          "value": "{{TRC_EMAIL}}"
+        },
+        {
+          "name": "username",
+          "value": "{{TRC_USERNAME}}"
+        },
+        {
+          "name": "password",
+          "value": "{{TRC_PASS}}"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "type": "res-code",
+        "custom": "",
+        "action": "equal",
+        "value": "200"
+      },
+      {
+        "type": "res-body",
+        "custom": "",
+        "action": "isjson",
+        "value": "{ \"user\": { \"email\": \"example@example.com\", \"username\": \"admin\", \"updated_at\": \"2023-04-28T09:17:41.000000Z\", \"created_at\": \"2023-04-28T09:17:41.000000Z\", \"uid\": 4 } }"
+      }
+    ]
+  },
+  {
+    "_id": "b054c801-a9bb-474c-af98-07c5cd8591b4",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "logout",
+    "url": "localhost:8000/api/logout",
+    "method": "POST",
+    "sortNum": 40000,
+    "created": "2023-04-28T08:47:29.263Z",
+    "modified": "2023-04-28T08:47:29.263Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 26|XP9j3sgUroC7AdQ8eqMbQbHJzjlLkMqFD0gcmqgN"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "name",
+          "value": "ựejgire"
+        },
+        {
+          "name": "private",
+          "value": "1"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "940924f8-bd0d-4e4f-80bb-da4138675100",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "logout",
+    "url": "localhost:8000/api/logout",
+    "method": "POST",
+    "sortNum": 50000,
+    "created": "2023-04-28T08:47:52.113Z",
+    "modified": "2023-04-28T08:47:52.113Z",
+    "headers": [
+      {
+        "name": "Authorization",
+        "value": "Bearer 26|XP9j3sgUroC7AdQ8eqMbQbHJzjlLkMqFD0gcmqgN"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "name",
+          "value": "ựejgire"
+        },
+        {
+          "name": "private",
+          "value": "1"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "dff7e092-08c3-435a-a246-c22a67bfb5db",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "reset-password",
+    "url": "localhost:8000/api/reset-password",
+    "method": "POST",
+    "sortNum": 60000,
+    "created": "2023-04-28T08:47:59.192Z",
+    "modified": "2023-04-28T08:47:59.192Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "email",
+          "value": "tachib.shibn@gmail.com"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "a450b1a8-857c-4725-959c-193955735b8f",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "forgot-password",
+    "url": "localhost:8000/api/forgot-password",
+    "method": "POST",
+    "sortNum": 70000,
+    "created": "2023-04-28T08:48:09.624Z",
+    "modified": "2023-04-28T08:48:09.624Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "email",
+          "value": "tachib.shibn@gmail.com"
+        }
+      ]
+    },
+    "tests": []
+  },
+  {
+    "_id": "659091f2-03ea-47fa-998e-10c8819f3ed6",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "register with email exists",
+    "url": "localhost:8000/api/register",
+    "method": "POST",
+    "sortNum": 1875,
+    "created": "2023-04-28T09:15:31.089Z",
+    "modified": "2023-04-28T09:16:31.508Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "email",
+          "value": "{{TRC_EMAIL}}"
+        },
+        {
+          "name": "username",
+          "value": "{{TRC_USERNAME}}"
+        },
+        {
+          "name": "password",
+          "value": "{{TRC_PASS}}"
+        }
+      ]
+    },
+    "tests": [
+      {
+        "type": "res-code",
+        "custom": "",
+        "action": "equal",
+        "value": "422"
+      },
+      {
+        "type": "res-body",
+        "custom": "",
+        "action": "isjson",
+        "value": "{ \"message\": \"The given data was invalid.\", \"errors\": { \"email\": [ \"The email has already been taken.\" ] } }"
+      }
+    ],
+    "preReq": {
+      "runRequests": [
+        {
+          "reqId": "51c9a359-5afe-4f37-ab28-db720fdb0d68",
+          "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+          "triggerCondition": "run-once",
+          "triggerValue": ""
+        }
+      ]
+    }
+  },
+  {
+    "_id": "6b05efb3-e36b-43bb-bcdf-a2aed1b8c1dc",
+    "colId": "2ab48779-3b1b-485b-a00a-16e0e53699d8",
+    "containerId": "",
+    "name": "destroy with correct password",
+    "url": "localhost:8000/api/destroy",
+    "method": "POST",
+    "sortNum": 80000,
+    "created": "2023-04-28T09:27:18.834Z",
+    "modified": "2023-04-28T09:42:00.628Z",
+    "headers": [
+      {
+        "name": "authorization",
+        "value": "Bearer 38|zmCNNIHX7YiSTlEW0nkbTPtKVKOzarhVyEXJ9l5Q"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "formdata",
+      "raw": "",
+      "form": [
+        {
+          "name": "password",
+          "value": "{{TRC_PASS}}"
+        }
+      ]
+    },
+    "tests": []
+  }
+]
