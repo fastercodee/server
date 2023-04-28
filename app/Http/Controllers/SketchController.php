@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\File;
 use App\Models\Sketch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 define('RULE_FILEPATH', 'regex:/^(?:[^\/\0]+\/)*[^\/\0]+$/');
 define('RULE_UID', ['required', 'integer', 'max:99999999999999999999']);
@@ -336,21 +337,29 @@ class SketchController extends Controller
     }
     // add files
     $now = now();
-    File::insert(array_map(function ($diff) use ($sketch, $now) {
+    $records = (array_map(function ($diff) use ($sketch, $now) {
       $diff['by_sketch_uid'] = $sketch->uid;
       $diff['data'] = file_get_contents($diff['file']->getRealPath());
 
       $diff['created_at'] = $now;
       $diff['updated_at'] = $now;
-      
-      $diff['unencodable_data']= $diff['size'] > 1000000 || json_encode($diff['data']) === false;
+
+      $diff['unencodable_data'] = $diff['size'] > 1000000 || json_encode($diff['data']) === false;
 
       unset($diff['file']);
       return $diff;
     }, $files_add));
 
+    $files_added = [];
+    foreach ($records as $record)
+      $files_added[] = [
+        'uid' => DB::table('files')->insertGetId($record),
+        'hash' => $record['hash']
+      ];
+
     return response()->json([
       'sketch' => $sketch,
+      'files_added' => $files_added
     ]);
   }
 
