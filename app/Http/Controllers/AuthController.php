@@ -31,8 +31,9 @@ class AuthController extends Controller
     $credentials['username'] = strtolower($credentials['username']);
     // $credentials['password'] = Hash::make($credentials['password']);
 
+    $is_login_with_email = !!filter_var($credentials['username'], FILTER_VALIDATE_EMAIL);
     if (
-      !Auth::attempt(!!filter_var($credentials['username'], FILTER_VALIDATE_EMAIL) ? [
+      !Auth::attempt($is_login_with_email ? [
         'email' => $credentials['username'],
         'password' => $credentials['password']
       ] : [
@@ -41,7 +42,8 @@ class AuthController extends Controller
         ])
     ) {
       return response()->json([
-        'message' => 'Unauthorized'
+        'message' => $is_login_with_email ? 'Email or password is incorrect' : 'Username or password is incorrect',
+        'code' => $is_login_with_email ? 'email_or_password_incorrect' : 'username_or_password_incorrect'
       ], 401);
     }
 
@@ -73,7 +75,8 @@ class AuthController extends Controller
     // check username exists
     if (User::where('username_lower', strtolower($input['username']))->exists())
       return response()->json([
-        'message' => 'The username has already been taken.'
+        'message' => 'The username has already been taken.',
+        'code' => 'username_already_taken'
       ], 409);
 
     $user = User::create($input);
