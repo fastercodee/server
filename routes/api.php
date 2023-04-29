@@ -16,20 +16,20 @@ use App\Http\Controllers\SketchController;
 |
 */
 Route::middleware('guest')->group(function () {
-  Route::post('login', [AuthController::class, 'login']);
-  Route::post('register', [AuthController::class, 'register']);
-  Route::get('password/reset/{token}', [AuthController::class, 'reset_password'])->name('password.reset');
-  Route::post('forgot-password', [AuthController::class, 'forgot_password'])->name('password.email');
+  Route::post('auth/login', [AuthController::class, 'login']);
+  Route::post('auth/register', [AuthController::class, 'register']);
+  Route::get('auth/password/reset/{token}', [AuthController::class, 'reset_password'])->name('password.reset');
+  Route::post('auth/forgot-password', [AuthController::class, 'forgot_password'])->name('password.email');
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-  Route::post('logout', [AuthController::class, 'logout']);
-  Route::post('destroy', [AuthController::class, 'destroy']);
+  Route::post('auth/logout', [AuthController::class, 'logout']);
+  Route::post('auth/destroy', [AuthController::class, 'destroy']);
 });
 
 
 Route::middleware('auth:sanctum')->group(function () {
-  Route::get('/user', function (Request $request) {
+  Route::get('auth/user', function (Request $request) {
       return $request->user();
   });
 });
