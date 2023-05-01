@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Google_Client;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -121,8 +122,8 @@ class AuthController extends Controller
       ], 409);
 
     $uid = User::create($input)->uid;
-		
-		$user = User::findOrFail($uid);
+
+    $user = User::findOrFail($uid);
 
     return response_user_and_token($user);
   }
@@ -179,34 +180,121 @@ class AuthController extends Controller
 
   public function check_email(Request $request)
   {
-		$request->validate([
+    $request->validate([
       'email' => ['required', 'email', 'unique:users,email'],
     ], [
         'email.unique' => 'The email has already been taken.',
       ]);
-			
-		return response()->json([
-			"code" => "not_exists"
-		]);
-	}
+
+    return response()->json([
+      "code" => "not_exists"
+    ]);
+  }
   public function check_username(Request $request)
   {
-		$request->validate([
+    $request->validate([
       'username' => ['required', 'regex:' . REGEX_USERNAME],
     ]);
-		
+
     // check username exists
     if (User::where('username_lower', transform_username_to_username_lower($request->get('username')))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
       ], 409);
-			
-		return response()->json([
-			"code" => "not_exists"
-		]);
-	}
-	
+
+    return response()->json([
+      "code" => "not_exists"
+    ]);
+  }
+
+  public function oauth2(Request $request)
+  {
+    $request->validate([
+      'id_token' => ['required', 'string'],
+      'username' => ['nullable', 'regex:' . REGEX_USERNAME],
+    ]);
+    $username = $request->get('username');
+    if ($username && User::where('username_lower', transform_username_to_username_lower($username))->exists())
+      return response()->json([
+        'message' => 'The username has already been taken.',
+        'code' => 'username_already_taken'
+      ], 409);
+
+
+    $id_token = $request->get('id_token');
+
+    $client = new Google_Client();
+    $client->setClientId(env('GOOGLE_CLIENT_ID'));
+
+    $payload = $client->verifyIdToken($id_token);
+
+    if (!$payload)
+      return response()->json([
+        'message' => 'This token invalid',
+        'code' => 'token_invalid'
+      ], 401);
+
+    $attributes = $payload->getAttributes()['payload'];
+
+    $user_by_sub = User::firstWhere('sub', $attributes['sub']);
+
+    if ($user_by_sub) {
+      $email_db = $user_by_sub->email;
+      $email_oa = $attributes['email'];
+
+      if (!$email_db)
+        $user_by_sub->update(['email' => $email_oa]);
+
+      // ok $email_db and $email_oa ready
+
+
+      return response_user_and_token($user_by_sub);
+    }
+
+    // user by sub not found
+    $user_by_email = User::firstWhere('email', $attributes['email']);
+
+    if ($user_by_email) {
+      // accept login ok
+      // email valid
+      return response_user_and_token($user_by_email);
+    }
+
+    // user not exists, uid ok, sub ok, email ok
+    // continue register new user
+    if (is_null($username)) {
+      $username = transform_name_to_username($attributes['name']);
+
+      if ($username === null || User::where('username_lower', strtolower(str_replace('-', '_', $username)))->exists()) {
+        return response()->json([
+          'message' => 'Username required',
+          'code' => 'username_required'
+        ], 201);
+      }
+    }
+
+    // $username exists
+    // ['email', 'username', 'name', 'password']
+    $email = $attributes['email'];
+    // $username as const
+    $name = $attributes['name'];
+    // $password = null;
+    $picture = $attributes['picture'];
+    $oauth2_google_sub = $attributes['sub'];
+
+    $uid = User::create([
+      'email' => $email,
+      'name' => $name,
+      'picture' => $picture,
+      'oauth2_google_sub' => $oauth2_google_sub
+    ])->uid;
+    
+    $user = User::findOrFail($uid);
+
+    return response_user_and_token($user);
+  }
+
   # need auth
   public function logout(Request $request)
   {

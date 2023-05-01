@@ -22,6 +22,11 @@ class User extends Authenticatable
             $user->email = strtolower($user->email);
         });
     }
+
+    public function getLinkedGoogleAttribute()
+    {
+        return !is_null($this->attributes['oauth2_google_sub']);
+    }
     /**
      * The attributes that are mass assignable.
      *
@@ -33,6 +38,8 @@ class User extends Authenticatable
         'username',
         'name',
         'password',
+        'picture',
+        'oauth2_google_sub',
         'updated_at',
         'created_at',
     ];
@@ -44,6 +51,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'oauth2_google_sub',
         'username_lower',
         'remember_token',
     ];

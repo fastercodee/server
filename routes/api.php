@@ -18,8 +18,13 @@ use App\Http\Controllers\SketchController;
 Route::middleware('guest')->group(function () {
   Route::post('auth/login', [AuthController::class, 'login']);
   Route::post('auth/register', [AuthController::class, 'register']);
-	Route::post('auth/check_email', [AuthController::class, 'check_email']);
-	Route::post('auth/check_username', [AuthController::class, 'check_username']);
+  Route::post('auth/check_email', [AuthController::class, 'check_email']);
+  Route::post('auth/check_username', [AuthController::class, 'check_username']);
+
+  // oauth 2
+  Route::post('auth/oauth2', [AuthController::class, 'oauth2']);
+
+  // restore account
   Route::get('auth/password/reset/{token}', [AuthController::class, 'reset_password'])->name('password.reset');
   Route::post('auth/forgot-password', [AuthController::class, 'forgot_password'])->name('password.email');
 });
@@ -32,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('auth/user', function (Request $request) {
-      return $request->user();
+    return $request->user();
   });
 });
 
