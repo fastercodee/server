@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 const REGEX_USERNAME = '/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i';
 function response_user_and_token(User $user)
@@ -56,6 +57,39 @@ function transform_name_to_username(string $name)
 function transform_username_to_username_lower(string $username)
 {
   return str_replace('-', '_', $username);
+}
+
+/**
+ * @return \Google_Auth_LoginTicket
+ */
+function verify_token_google(string $id_token)
+{
+  $client = new Google_Client();
+  $client->setClientId(env('GOOGLE_CLIENT_ID'));
+
+  $payload = $client->verifyIdToken($id_token);
+
+  return $payload;
+}
+
+function verify_token_github(string $id_token)
+{
+  $data = array(
+    'client_id' => env('GITHUB_CLIENT_ID'),
+    'client_secret' => env('GITHUB_CLIENT_SECRET'),
+    'code' => $id_token
+  );
+  $options = array(
+    'http' => array(
+      'header' => "Content-type: application/x-www-form-urlencoded\r\nAccept: application/json\r\n",
+      'method' => 'POST',
+      'content' => http_build_query($data)
+    )
+  );
+  $context = stream_context_create($options);
+  $result = file_get_contents('https://github.com/login/oauth/access_token', false, $context);
+
+  return json_encode($result);
 }
 
 class AuthController extends Controller
@@ -211,6 +245,7 @@ class AuthController extends Controller
   public function oauth2(Request $request)
   {
     $request->validate([
+      'type' => ['required', Rule::in(['google', 'github'])],
       'id_token' => ['required', 'string'],
       'username' => ['nullable', 'regex:' . REGEX_USERNAME],
     ]);
@@ -221,13 +256,16 @@ class AuthController extends Controller
         'code' => 'username_already_taken'
       ], 409);
 
+    (string) $id_token = $request->get('id_token');
 
-    $id_token = $request->get('id_token');
-
-    $client = new Google_Client();
-    $client->setClientId(env('GOOGLE_CLIENT_ID'));
-
-    $payload = $client->verifyIdToken($id_token);
+    switch ($request->get('type')) {
+      case 'google':
+        $payload = verify_token_google($id_token);
+        break;
+      case 'github':
+        $payload = verify_token_github($id_token);
+        break;
+    }
 
     if (!$payload)
       return response()->json([
@@ -289,7 +327,7 @@ class AuthController extends Controller
       'picture' => $picture,
       'oauth2_google_sub' => $oauth2_google_sub
     ])->uid;
-    
+
     $user = User::findOrFail($uid);
 
     return response_user_and_token($user);
