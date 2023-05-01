@@ -139,6 +139,35 @@ class AuthController extends Controller
       ]);
   }
 
+
+  public function check_email(Request $request) {
+		$request->validate([
+      'email' => ['required', 'email', 'unique:users,email'],
+    ], [
+        'email.unique' => 'The email has already been taken.',
+      ]);
+			
+		return response()->json([
+			"code" => "not_exists"
+		]);
+	}
+	public function check_username(Request $request) {
+		$request->validate([
+      'username' => ['required', 'regex:/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i'],
+    ]);
+		
+    // check username exists
+    if (User::where('username_lower', str_replace('-', '_', strtolower($request->get('username'))))->exists())
+      return response()->json([
+        'message' => 'The username has already been taken.',
+        'code' => 'username_already_taken'
+      ], 409);
+			
+		return response()->json([
+			"code" => "not_exists"
+		]);
+	}
+	
   # need auth
   public function logout(Request $request)
   {

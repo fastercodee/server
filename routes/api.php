@@ -18,6 +18,8 @@ use App\Http\Controllers\SketchController;
 Route::middleware('guest')->group(function () {
   Route::post('auth/login', [AuthController::class, 'login']);
   Route::post('auth/register', [AuthController::class, 'register']);
+	Route::post('auth/check_email', [AuthController::class, 'check_email']);
+	Route::post('auth/check_username', [AuthController::class, 'check_username']);
   Route::get('auth/password/reset/{token}', [AuthController::class, 'reset_password'])->name('password.reset');
   Route::post('auth/forgot-password', [AuthController::class, 'forgot_password'])->name('password.email');
 });
