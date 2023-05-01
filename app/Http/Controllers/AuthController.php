@@ -28,7 +28,6 @@ class AuthController extends Controller
     ]);
 
     $credentials = $request->only(['username', 'password']);
-    $credentials['username'] = strtolower($credentials['username']);
     // $credentials['password'] = Hash::make($credentials['password']);
 
     $is_login_with_email = !!filter_var($credentials['username'], FILTER_VALIDATE_EMAIL);
@@ -73,7 +72,7 @@ class AuthController extends Controller
     $input['password'] = Hash::make($input['password']);
 
     // check username exists
-    if (User::where('username_lower', str_replace('-', '_', strtolower($input['username'])))->exists())
+    if (User::where('username_lower', str_replace('-', '_', $input['username']))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
@@ -159,7 +158,7 @@ class AuthController extends Controller
     ]);
 		
     // check username exists
-    if (User::where('username_lower', str_replace('-', '_', strtolower($request->get('username'))))->exists())
+    if (User::where('username_lower', str_replace('-', '_', $request->get('username')))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
