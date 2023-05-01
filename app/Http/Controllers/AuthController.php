@@ -73,13 +73,15 @@ class AuthController extends Controller
     $input['password'] = Hash::make($input['password']);
 
     // check username exists
-    if (User::where('username_lower', strtolower($input['username']))->exists())
+    if (User::where('username_lower', str_replace('-', '_', strtolower($input['username'])))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
       ], 409);
 
-    $user = User::create($input);
+    $uid = User::create($input)->uid;
+		
+		$user = User::findOrFail($uid);
 
     $token = $user->createToken('authToken')->plainTextToken;
 
