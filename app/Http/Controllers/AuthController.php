@@ -10,6 +10,53 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
+const REGEX_USERNAME = '/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i';
+function response_user_and_token(User $user)
+{
+  $token = $user->createToken('authToken')->plainTextToken;
+
+  return response()->json([
+    'user' => $user,
+  ], 200, [
+      'Authorization' => 'Bearer ' . $token,
+    ]);
+}
+
+/**
+ * @return string|null
+ */
+function transform_name_to_username(string $name)
+{
+  // Loại bỏ các ký tự không phải chữ cái và số
+  $transformedName = preg_replace('/[^a-zA-Z0-9]/', '', $name);
+
+  // Giới hạn độ dài của chuỗi
+  $transformedName = substr($transformedName, 0, 39);
+
+  // Đảm bảo chuỗi bắt đầu bằng một ký tự chữ cái hoặc số
+  if (!preg_match('/^[a-z\d]/i', $transformedName)) {
+    $transformedName = 'a' . $transformedName;
+  }
+
+  // Kiểm tra xem chuỗi có hợp lệ không
+  if (empty($transformedName) || !preg_match('/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i', $transformedName)) {
+    return null;
+  }
+
+  if ($transformedName === '')
+    return null;
+
+  return $transformedName;
+}
+
+/**
+ * @return string
+ */
+function transform_username_to_username_lower(string $username)
+{
+  return str_replace('-', '_', $username);
+}
+
 class AuthController extends Controller
 {
   public function login(Request $request)
@@ -18,7 +65,7 @@ class AuthController extends Controller
       'username' => [
         'required',
         function ($attribute, $value, $fail) {
-          if (!(filter_var($value, FILTER_VALIDATE_EMAIL)) && !preg_match('/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i', $value)) {
+          if (!(filter_var($value, FILTER_VALIDATE_EMAIL)) && !preg_match(REGEX_USERNAME, $value)) {
             return $fail('The :attribute must be either a valid email or match the regex pattern.');
           }
         }
@@ -46,22 +93,17 @@ class AuthController extends Controller
       ], 401);
     }
 
+    /** @var User $user */
     $user = Auth::user();
 
-    $token = $user->createToken('authToken')->plainTextToken;
-
-    return response()->json([
-      'user' => $user,
-    ], 200, [
-        'Authorization' => 'Bearer ' . $token,
-      ]);
+    return response_user_and_token($user);
   }
 
   public function register(Request $request)
   {
     $request->validate([
       'email' => ['required', 'email', 'unique:users,email'],
-      'username' => ['required', 'regex:/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i'],
+      'username' => ['required', 'regex:' . REGEX_USERNAME],
       'name' => ['nullable', 'max:50'],
       'password' => ['required', 'regex:/^(?=.*[A-Z])(?=.*\d).*$/']
     ], [
@@ -72,7 +114,7 @@ class AuthController extends Controller
     $input['password'] = Hash::make($input['password']);
 
     // check username exists
-    if (User::where('username_lower', str_replace('-', '_', $input['username']))->exists())
+    if (User::where('username_lower', transform_username_to_username_lower($input['username']))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
@@ -82,13 +124,7 @@ class AuthController extends Controller
 		
 		$user = User::findOrFail($uid);
 
-    $token = $user->createToken('authToken')->plainTextToken;
-
-    return response()->json([
-      'user' => $user,
-    ], 200, [
-        'Authorization' => 'Bearer ' . $token,
-      ]);
+    return response_user_and_token($user);
   }
 
   public function forgot_password(Request $request)
@@ -141,7 +177,8 @@ class AuthController extends Controller
   }
 
 
-  public function check_email(Request $request) {
+  public function check_email(Request $request)
+  {
 		$request->validate([
       'email' => ['required', 'email', 'unique:users,email'],
     ], [
@@ -152,13 +189,14 @@ class AuthController extends Controller
 			"code" => "not_exists"
 		]);
 	}
-	public function check_username(Request $request) {
+  public function check_username(Request $request)
+  {
 		$request->validate([
-      'username' => ['required', 'regex:/^[a-z\d](?:[a-z\d_]|-(?=[a-z\d_])){0,38}$/i'],
+      'username' => ['required', 'regex:' . REGEX_USERNAME],
     ]);
 		
     // check username exists
-    if (User::where('username_lower', str_replace('-', '_', $request->get('username')))->exists())
+    if (User::where('username_lower', transform_username_to_username_lower($request->get('username')))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
@@ -187,7 +225,7 @@ class AuthController extends Controller
       'password' => ['required', 'max:50', 'regex:/^(?=.*[A-Z])(?=.*\d).*$/'],
     ]);
 
-    if (!Hash::check(request()->password,  $request->user()['password'])) {
+    if (!Hash::check(request()->password, $request->user()['password'])) {
       return response()->json([
         'message' => 'Incorrect password',
       ], 403);
