@@ -87,9 +87,30 @@ function verify_token_github(string $id_token)
     )
   );
   $context = stream_context_create($options);
-  $result = file_get_contents('https://github.com/login/oauth/access_token', false, $context);
+  $result = (array) json_decode(file_get_contents('https://github.com/login/oauth/access_token', false, $context));
 
-  return json_encode($result);
+if (isset($result['error'])) return null;
+
+$access_token = $result['access_token'];
+
+$url = 'https://api.github.com/user';
+$options = array(
+    'http' => array(
+        'header'  => "User-Agent: My User Agent\r\nAuthorization: token $access_token\r\n",
+        'method'  => 'GET'
+    )
+);
+$context  = stream_context_create($options);
+$result = file_get_contents($url, false, $context);
+$user_info = json_decode($result);
+
+return [
+  'sub' => $user_info->id,
+  'email' => $user_info->email,
+  'name' => $user_info->name,
+  'picture' => $user_info->avatar_url,
+  'username' => $user_info->login,
+];
 }
 
 class AuthController extends Controller
@@ -261,21 +282,20 @@ class AuthController extends Controller
     switch ($request->get('type')) {
       case 'google':
         $payload = verify_token_google($id_token);
+        $attributes = !$payload ? null : verify_token_google($id_token)->getAttributes()['payload'];
         break;
       case 'github':
-        $payload = verify_token_github($id_token);
+        $attributes = verify_token_github($id_token);
         break;
     }
-
-    if (!$payload)
+    
+    if (!$attributes)
       return response()->json([
         'message' => 'This token invalid',
         'code' => 'token_invalid'
-      ], 401);
+      ], 409);
 
-    $attributes = $payload->getAttributes()['payload'];
-
-    $user_by_sub = User::firstWhere('sub', $attributes['sub']);
+    $user_by_sub = User::firstWhere('oauth2_'.$request->get('type').'_sub', $attributes['sub']);
 
     if ($user_by_sub) {
       $email_db = $user_by_sub->email;
@@ -302,13 +322,13 @@ class AuthController extends Controller
     // user not exists, uid ok, sub ok, email ok
     // continue register new user
     if (is_null($username)) {
-      $username = transform_name_to_username($attributes['name']);
+      $username = isset($attributes['username']) ? $attributes['username'] : transform_name_to_username($attributes['name']);
 
       if ($username === null || User::where('username_lower', strtolower(str_replace('-', '_', $username)))->exists()) {
         return response()->json([
           'message' => 'Username required',
           'code' => 'username_required'
-        ], 201);
+        ], 409);
       }
     }
 
@@ -323,6 +343,7 @@ class AuthController extends Controller
 
     $uid = User::create([
       'email' => $email,
+      'username' => $username,
       'name' => $name,
       'picture' => $picture,
       'oauth2_google_sub' => $oauth2_google_sub
