@@ -26,8 +26,7 @@ class SketchController extends Controller
         'max:120',
         function ($attribute, $value, $fail) {
           if (count($value) !== count(request()->file('files')))
-            return $fail('The number of meta must be equal to the number of files')
-            ;
+            return $fail('The number of meta must be equal to the number of files');
         }
       ],
       'meta.*' => ['string', 'min:1', 'max:260', RULE_FILEPATH],

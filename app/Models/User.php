@@ -27,6 +27,9 @@ class User extends Authenticatable
     {
         return !is_null($this->attributes['oauth2_google_sub']);
     }
+    public function getLinkedGithubAttribute() {
+        return !is_null($this->attributes['oauth2_github_sub']);
+    }
     /**
      * The attributes that are mass assignable.
      *
@@ -40,6 +43,7 @@ class User extends Authenticatable
         'password',
         'picture',
         'oauth2_google_sub',
+        'oauth2_github_sub',
         'updated_at',
         'created_at',
     ];
@@ -52,6 +56,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'oauth2_google_sub',
+        'oauth2_github_sub',
         'username_lower',
         'remember_token',
     ];
