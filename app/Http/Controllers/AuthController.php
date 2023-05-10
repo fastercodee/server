@@ -56,7 +56,7 @@ function transform_name_to_username(string $name)
  */
 function transform_username_to_username_lower(string $username)
 {
-  return str_replace('-', '_', $username);
+  return strtolower( str_replace('-', '_', $username) );
 }
 
 /**
@@ -131,6 +131,7 @@ class AuthController extends Controller
     ]);
 
     $credentials = $request->only(['username', 'password']);
+    $credentials['username'] = strtolower($credentials['username']);
     // $credentials['password'] = Hash::make($credentials['password']);
 
     $is_login_with_email = !!filter_var($credentials['username'], FILTER_VALIDATE_EMAIL);
@@ -170,7 +171,7 @@ class AuthController extends Controller
     $input['password'] = Hash::make($input['password']);
 
     // check username exists
-    if (User::where('username_lower', transform_username_to_username_lower($input['username']))->exists())
+    if (User::where('username_lower', ( transform_username_to_username_lower($input['username'])))->exists())
       return response()->json([
         'message' => 'The username has already been taken.',
         'code' => 'username_already_taken'
@@ -324,7 +325,7 @@ class AuthController extends Controller
     if (is_null($username)) {
       $username = isset($attributes['username']) ? $attributes['username'] : transform_name_to_username($attributes['name']);
 
-      if ($username === null || User::where('username_lower', strtolower(str_replace('-', '_', $username)))->exists()) {
+      if ($username === null || User::where('username_lower', (transform_username_to_username_lower($username)))->exists()) {
         return response()->json([
           'message' => 'Username required',
           'code' => 'username_required'

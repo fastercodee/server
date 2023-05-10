@@ -13,7 +13,13 @@ class EmailAndUsernameLower
             $request->merge(['email' => trim(strtolower($request->input('email')))]);
 
         if ($request->has('username'))
-            $request->merge(['username' => trim(strtolower($request->input('username')))]);
+            $request->merge(['username' => trim($request->input('username'))]);
+
+        if ($request->has('name'))
+            $request->merge(['name' => trim($request->input('name'))]);
+
+        if ($request->has('description'))
+            $request->merge(['description' => trim($request->input('description'))]);
 
         return $next($request);
     }
