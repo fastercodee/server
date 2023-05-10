@@ -6,6 +6,8 @@ use App\Models\File;
 use App\Models\Sketch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 define('RULE_FILEPATH', 'regex:/^(?:[^\/\0]+\/)*[^\/\0]+$/');
 define('RULE_UID', ['required', 'integer', 'max:99999999999999999999']);
@@ -17,7 +19,7 @@ class SketchController extends Controller
   public function create(Request $request)
   {
     $request->validate([
-      'name' => ['nullable', 'string', 'max:50'],
+      'name' => ['nullable', 'string', 'min:1', 'max:50'],
       'private' => ['nullable', 'in:0,1'],
 
       'meta' => [
@@ -88,6 +90,7 @@ class SketchController extends Controller
     File::insert($files);
 
     $sketch->user;
+    $sketch->loadCount('forks');
     return response()->json([
       'sketch' => $sketch,
     ]);
@@ -99,17 +102,24 @@ class SketchController extends Controller
       'uid' => RULE_UID,
     ]);
 
-    $user = request()->user();
+    $user = request()->user('sanctum');
 
-    $file = File::where('uid', $validated['uid'])
-      ->whereHas('sketch', function ($query) use ($user) {
-        $query = $query->where('private', false);
-        if ($user)
-          $query->orWhere('by_user_uid', $user->uid);
-      })
-      ->firstOrFail();
+    try {
+      $file = File::where('uid', $validated['uid'])
+        ->whereHas('sketch', function ($query) use ($user) {
+          $query = $query->where('private', false);
+          if ($user)
+            $query->orWhere('by_user_uid', $user->uid);
+        })
+        ->firstOrFail();
 
-    return response($file['data'])->header('Content-Type', 'application/octet-stream');
+      return response($file['data'])->header('Content-Type', 'application/octet-stream');
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'File not exists',
+        'code' => 'file_not_exists'
+      ], 404);
+    }
   }
 
   public function fetch(Request $request)
@@ -134,10 +144,20 @@ class SketchController extends Controller
       'deletes.*' => ['required', 'string', 'max:260', RULE_FILEPATH],
     ]);
 
-    $sketch = Sketch::findOrFail($validated['uid']);
+    try {
+      $sketch = Sketch::findOrFail($validated['uid']);
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'Sketch not exists',
+        'code' => 'sketch_not_exists'
+      ], 404);
+    }
+    $user = request()->user('sanctum');
 
-
-    if ($sketch->private ? request()->user() === null || $sketch->by_user_uid !== request()->user()->uid : false) {
+    if (
+      $sketch->private &&
+      (!$user || $sketch->by_user_uid !== $user->uid)
+    ) {
       return response()->json([
         'message' => "Sketch is private",
         'code' => 'sketch_is_private'
@@ -165,6 +185,7 @@ class SketchController extends Controller
           ];
       }
       unset($sketch->files);
+      $sketch->loadCount('forks');
       return response()->json([
         'sketch' => $sketch,
         'file_changes' => $files_change
@@ -176,7 +197,7 @@ class SketchController extends Controller
 
     $files_change = []; // all files of sketch on cloud : $sketch->files;
     // all files of sketch on client: request->only(['meta', 'hashes'])
-    // check files diff 
+    // check files diff
     foreach ($sketch->files_short as $file) {
       // check this file in client?
       if (isset($files_local[$file->filePath])) {
@@ -219,6 +240,7 @@ class SketchController extends Controller
 
     $sketch->user;
     unset($sketch['files_short']);
+    $sketch->loadCount('forks');
     return response()->json([
       'sketch' => $sketch,
       'file_changes' => $files_change
@@ -247,7 +269,14 @@ class SketchController extends Controller
       'deletes.*' => ['string', 'min:1', 'max:260', RULE_FILEPATH]
     ]);
 
-    $sketch = Sketch::findOrFail($validated['uid']);
+    try {
+      $sketch = Sketch::findOrFail($validated['uid']);
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'Sketch not exists',
+        'code' => 'sketch_not_exists'
+      ], 404);
+    }
     if ($sketch->by_user_uid !== $request->user()->uid)
       return response()->json([
         "message" => "You do not have permission to update this sketch",
@@ -356,9 +385,117 @@ class SketchController extends Controller
         'hash' => $record['hash']
       ];
 
+    $sketch->loadCount('forks');
     return response()->json([
       'sketch' => $sketch,
       'files_added' => $files_added
+    ]);
+  }
+
+  public function update_info(Request $request)
+  {
+    $validated = $request->validate([
+      'uid' => RULE_UID,
+      'name' => ['nullable', 'string', 'min:1', 'max:50', 'required_without_all:private,description'],
+      'private' => ['nullable', 'in:0,1', 'required_without_all:name,description'],
+      'description' => ['nullable', 'string', 'min:1', 'max:120', 'required_without_all:name,private']
+    ]);
+
+    try {
+      $sketch = Sketch::findOrFail($validated['uid']);
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'Sketch not exists',
+        'code' => 'sketch_not_exists'
+      ], 404);
+    }
+    if ($sketch->by_user_uid !== $request->user()->uid)
+      return response()->json([
+        "message" => "You do not have permission to update this sketch",
+        'code' => 'do_not_have_permission_to_update'
+      ], 403);
+
+    if (isset($validated['name']))
+      $sketch->name = $validated['name'];
+    if (isset($validated['private'])) {
+      if ($sketch->not_access_public)
+        return response()->json([
+          'message' => 'This sketch cannot be made public because it was fork from a private sketch',
+          'code' => 'cannot_public_because_it_fork_from_sketch_private'
+        ], 403);
+      $sketch->private = $validated['private'];
+    }
+    if (isset($validated['description']))
+      $sketch->description = $validated['description'];
+
+
+    $sketch->save();
+    $sketch->user;
+    $sketch->loadCount('forks');
+    return response()->json([
+      'sketch' => $sketch
+    ]);
+  }
+
+  public function check_name(Request $request)
+  {
+    $validated = $request->validate([
+      'uid' => RULE_UID,
+      'name' => ['required', 'string', 'min:1', 'max:50']
+    ]);
+    $user = $request->user();
+
+    $exists = Sketch::where('by_user_uid', $user->uid)->where('name_lower', strtolower($validated['name']))
+      ->where('uid', '!=', $validated['uid'])
+      ->exists();
+
+    if ($exists) {
+      return response()->json([
+        'message' => 'The name has already been taken.',
+        'code' => 'sketch_name_exists'
+      ], 409);
+    } else {
+      return response()->json([
+        "code" => "not_exists"
+      ]);
+    }
+  }
+
+  public function fork(Request $request)
+  {
+
+    $validated = $request->validate([
+      'uid' => RULE_UID,
+    ]);
+
+    try {
+      $sketch = Sketch::findOrFail($validated['uid']);
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'Sketch not exists',
+        'code' => 'sketch_not_exists'
+      ], 404);
+    }
+    if ($sketch->by_user_uid !== $request->user()->uid)
+      return response()->json([
+        "message" => "You do not have permission to update this sketch",
+        'code' => 'do_not_have_permission_to_update'
+      ], 403);
+
+    $user = $request->user();
+
+    $newSketch = $sketch->replicate();
+    $newSketch->by_user_uid = $user->uid;
+    $newSketch->fork_from = $sketch->uid;
+    if ($sketch->private)
+      $newSketch->private = '2';
+
+    $newSketch->save();
+
+    $newSketch->load('user');
+    $sketch->loadCount('forks');
+    return response()->json([
+      'sketch' => $newSketch
     ]);
   }
 
@@ -368,7 +505,14 @@ class SketchController extends Controller
       'uid' => RULE_UID,
     ]);
 
-    $sketch = Sketch::findOrFail($validated['uid']);
+    try {
+      $sketch = Sketch::findOrFail($validated['uid']);
+    } catch (ModelNotFoundException $e) {
+      return response()->json([
+        'message' => 'Sketch not exists',
+        'code' => 'sketch_not_exists'
+      ], 404);
+    }
 
     if ($sketch->by_user_uid !== $request->user()->uid)
       return response()->json([

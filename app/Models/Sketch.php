@@ -19,8 +19,10 @@ class Sketch extends Model
     'by_user_uid',
     'private',
     'name',
+    'description',
     'name_lower',
     'total_files_size',
+    'fork_from',
     'updated_at',
     'created_at'
   ];
@@ -54,9 +56,27 @@ class Sketch extends Model
 
     if (!$force)
       $query = $query->selectRaw('*, IF(unencodable_data = "1", NULL, data) as data');
-    
+
     return $query->first();
   }
+  
+  public function forks() {
+    
+      return $this->hasMany(Sketch::class, 'uid', 'fork_from');
+  }
+
+public function setPrivateAttribute($value)
+    {
+        if (in_array($value, [0, 1, 2], true)) {
+            $this->attributes['private'] = $value;
+        } else {
+            $this->attributes['private'] = (bool) $value;
+        }
+    }
+    
+    public function getNotAccessPublicAttribute() {
+      return $this->attributes['private'] === "2";
+    }
 
   protected $hidden = [
     'by_user_uid',

@@ -44,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
   Route::post('sketch/create', [SketchController::class, 'create']);
   Route::post('sketch/update', [SketchController::class, 'update']);
+  Route::post('sketch/update_info', [SketchController::class, 'update_info']);
+  Route::post('sketch/check_name', [SketchController::class, 'check_name']);
   Route::post('sketch/delete', [SketchController::class, 'delete']);
 });
 
