@@ -7,20 +7,24 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EmailAndUsernameLower
 {
-    public function handle(Request $request, Closure $next)
-    {
-        if ($request->has('email'))
-            $request->merge(['email' => trim(strtolower($request->input('email')))]);
-
-        if ($request->has('username'))
-            $request->merge(['username' => trim($request->input('username'))]);
-
-        if ($request->has('name'))
-            $request->merge(['name' => trim($request->input('name'))]);
-
-        if ($request->has('description'))
-            $request->merge(['description' => trim($request->input('description'))]);
-
-        return $next($request);
+  public function handle(Request $request, Closure $next)
+  {
+    if ($request->has("email")) {
+      $request->merge(["email" => trim(strtolower($request->input("email")))]);
     }
+
+    if ($request->has("username")) {
+      $request->merge(["username" => trim($request->input("username"))]);
+    }
+
+    if ($request->has("name")) {
+      $request->merge(["name" => trim($request->input("name"))]);
+    }
+
+    if ($request->has("description")) {
+      $request->merge(["description" => trim($request->input("description"))]);
+    }
+
+    return $next($request);
+  }
 }

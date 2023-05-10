@@ -7,21 +7,21 @@ use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
 {
-    use RefreshDatabase;
+  use RefreshDatabase;
 
-    public function test_login()
-    {
-        $user = User::factory()->create([
-            'password' => Hash::make('password'),
-        ]);
+  public function test_login()
+  {
+    $user = User::factory()->create([
+      "password" => Hash::make("password"),
+    ]);
 
-        $response = $this->postJson('/login', [
-            'username' => $user->email,
-            'password' => 'password',
-        ]);
+    $response = $this->postJson("/login", [
+      "username" => $user->email,
+      "password" => "password",
+    ]);
 
-        $response->assertStatus(200);
-        $response->assertHeader('Authorization');
-        $this->assertAuthenticatedAs($user);
-    }
+    $response->assertStatus(200);
+    $response->assertHeader("Authorization");
+    $this->assertAuthenticatedAs($user);
+  }
 }

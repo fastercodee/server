@@ -11,62 +11,63 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
-    protected $primaryKey = 'uid';
+  use HasApiTokens, HasFactory, Notifiable;
+  protected $primaryKey = "uid";
 
-    protected static function boot()
-    {
-        parent::boot();
+  protected static function boot()
+  {
+    parent::boot();
 
-        static::saving(function ($user) {
-            $user->email = strtolower($user->email);
-        });
-    }
+    static::saving(function ($user) {
+      $user->email = strtolower($user->email);
+    });
+  }
 
-    public function getLinkedGoogleAttribute()
-    {
-        return !is_null($this->attributes['oauth2_google_sub']);
-    }
-    public function getLinkedGithubAttribute() {
-        return !is_null($this->attributes['oauth2_github_sub']);
-    }
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'uid',
-        'email',
-        'username',
-        'name',
-        'password',
-        'picture',
-        'oauth2_google_sub',
-        'oauth2_github_sub',
-        'updated_at',
-        'created_at',
-    ];
+  public function getLinkedGoogleAttribute()
+  {
+    return !is_null($this->attributes["oauth2_google_sub"]);
+  }
+  public function getLinkedGithubAttribute()
+  {
+    return !is_null($this->attributes["oauth2_github_sub"]);
+  }
+  /**
+   * The attributes that are mass assignable.
+   *
+   * @var array<int, string>
+   */
+  protected $fillable = [
+    "uid",
+    "email",
+    "username",
+    "name",
+    "password",
+    "picture",
+    "oauth2_google_sub",
+    "oauth2_github_sub",
+    "updated_at",
+    "created_at",
+  ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'oauth2_google_sub',
-        'oauth2_github_sub',
-        'username_lower',
-        'remember_token',
-    ];
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = [
+    "password",
+    "oauth2_google_sub",
+    "oauth2_github_sub",
+    "username_lower",
+    "remember_token",
+  ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        // 'email_verified_at' => 'datetime',
-    ];
+  /**
+   * The attributes that should be cast.
+   *
+   * @var array<string, string>
+   */
+  protected $casts = [
+    // 'email_verified_at' => 'datetime',
+  ];
 }
