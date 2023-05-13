@@ -507,8 +507,8 @@ class SketchController extends Controller
         return response()->json(
           [
             "message" =>
-              "This sketch cannot be made public because it was fork from a private sketch",
-            "code" => "cannot_public_because_it_fork_from_sketch_private",
+            "This sketch cannot be made public because it was fork from a private sketch",
+            "code" => "cannot_public_because_it_forked_from_sketch_private",
           ],
           403
         );
@@ -530,15 +530,16 @@ class SketchController extends Controller
   public function check_name(Request $request)
   {
     $validated = $request->validate([
-      "uid" => RULE_UID,
+      "uid" => array_slice(RULE_UID, 1),
       "name" => ["required", "string", "min:1", "max:50"],
     ]);
     $user = $request->user();
 
     $exists = Sketch::where("by_user_uid", $user->uid)
-      ->where("name_lower", strtolower($validated["name"]))
-      ->where("uid", "!=", $validated["uid"])
-      ->exists();
+      ->where("name_lower", strtolower($validated["name"]));
+    if (isset($validated["uid"]))
+      $exists = $exists->where("uid", "!=", $validated["uid"]);
+    $exists = $exists->exists();
 
     if ($exists) {
       return response()->json(
@@ -559,6 +560,12 @@ class SketchController extends Controller
   {
     $validated = $request->validate([
       "uid" => RULE_UID,
+      "name" => [
+        "nullable",
+        "string",
+        "min:1",
+        "max:50",
+      ],
     ]);
 
     try {
@@ -572,26 +579,40 @@ class SketchController extends Controller
         404
       );
     }
-    if ($sketch->by_user_uid !== $request->user()->uid) {
+
+
+    $user = $request->user();
+
+    if ($sketch->private && $sketch->by_user_uid !== $user->uid) {
       return response()->json(
         [
-          "message" => "You do not have permission to update this sketch",
-          "code" => "do_not_have_permission_to_update",
+          "message" => "Sketch is private",
+          "code" => "sketch_is_private",
         ],
         403
       );
     }
 
-    $user = $request->user();
-
     $newSketch = $sketch->replicate();
+    unset($newSketch['name_lower']);
     $newSketch->by_user_uid = $user->uid;
-    $newSketch->fork_from = $sketch->uid;
+    $newSketch->forked_from = $sketch->uid;
+    if (isset($validated['name']))
+      $newSketch->name = $validated['name'];
     if ($sketch->private) {
       $newSketch->private = "2";
     }
 
     $newSketch->save();
+
+    // Replicate related files
+    $files = $sketch->files_raw;
+    foreach ($files as $file) {
+      $newFile = $file->replicate();
+      $newFile->by_sketch_uid = $newSketch->uid;
+      $newFile->save();
+    }
+
 
     $newSketch->load("user");
     $sketch->loadCount("forks");
@@ -624,6 +645,28 @@ class SketchController extends Controller
         "code" => "do_not_have_permission_to_update",
       ]);
     }
+
+    $old_uid = $sketch->uid;
+
+    Sketch::where('private', 1)
+      ->where('forked_from', $old_uid)
+      ->where('uid', '!=', $old_uid)
+      ->delete();
+
+
+    // Find fork public and set new fork
+    $new_original_sketch_id = Sketch::where('private', 0)
+      ->where('forked_from', $old_uid)
+      ->where('uid', '!=', $old_uid)
+      ->value('uid');
+
+    // Update fork_from
+    if ($new_original_sketch_id !== null) {
+      Sketch::where('forked_from', $old_uid)
+        ->where('uid', '!=', $old_uid)
+        ->update(['forked_from' => $new_original_sketch_id]);
+    }
+
 
     $sketch->delete();
 

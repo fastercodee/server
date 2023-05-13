@@ -22,7 +22,7 @@ class Sketch extends Model
     "description",
     "name_lower",
     "total_files_size",
-    "fork_from",
+    "forked_from",
     "updated_at",
     "created_at",
   ];
@@ -37,6 +37,10 @@ class Sketch extends Model
       "*",
       DB::raw('IF(unencodable_data = "1", NULL, data) as data'),
     ]);
+  }
+  public function files_raw()
+  {
+    return $this->hasMany(File::class, "by_sketch_uid", "uid");
   }
   public function files_short($paths = null)
   {
@@ -74,7 +78,7 @@ class Sketch extends Model
 
   public function forks()
   {
-    return $this->hasMany(Sketch::class, "uid", "fork_from");
+    return $this->hasMany(Sketch::class, "uid", "forked_from");
   }
 
   public function setPrivateAttribute($value)
