@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 define("RULE_FILEPATH", 'regex:/^(?:[^\/\0]+\/)*[^\/\0]+$/');
 define("RULE_UID", ["required", "integer", "max:99999999999999999999"]);
+define("RULE_SKETCH_NAME", ['string', 'min:1', 'max:50', 'regex:/^[^\\/:*?"<>|]+$/']);
 
 class SketchController extends Controller
 {
   public function create(Request $request)
   {
     $request->validate([
-      "name" => ["nullable", "string", "min:1", "max:50"],
+      "name" => array_merge(["nullable"], RULE_SKETCH_NAME),
       "private" => ["nullable", "in:0,1"],
 
       "meta" => [
@@ -457,13 +458,10 @@ class SketchController extends Controller
   {
     $validated = $request->validate([
       "uid" => RULE_UID,
-      "name" => [
+      "name" => array_merge([
         "nullable",
-        "string",
-        "min:1",
-        "max:50",
         "required_without_all:private,description",
-      ],
+      ], RULE_SKETCH_NAME),
       "private" => [
         "nullable",
         "in:0,1",
@@ -531,7 +529,7 @@ class SketchController extends Controller
   {
     $validated = $request->validate([
       "uid" => array_slice(RULE_UID, 1),
-      "name" => ["required", "string", "min:1", "max:50"],
+      "name" => array_merge(["required"], RULE_SKETCH_NAME),
     ]);
     $user = $request->user();
 
@@ -560,12 +558,9 @@ class SketchController extends Controller
   {
     $validated = $request->validate([
       "uid" => RULE_UID,
-      "name" => [
+      "name" => array_merge([
         "nullable",
-        "string",
-        "min:1",
-        "max:50",
-      ],
+      ], RULE_SKETCH_NAME),
     ]);
 
     try {
